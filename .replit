@@ -1,0 +1,3 @@
+run="bash run.bash"
+language="cpp"
+onBoot="go run .github/testServer.go 8080 10 SecretMessage"

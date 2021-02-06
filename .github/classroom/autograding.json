@@ -1,0 +1,54 @@
+{
+	"tests": [
+		{
+			"name": "Test with single request",
+			"setup": "",
+			"run": "timeout 15 bash .github/test1.bash",
+			"input": "",
+			"output": "We broke the security code!",
+			"comparison": "exact",
+			"timeout": 60,
+			"points": 20
+		},
+		{
+			"name": "Test with 100 request",
+			"setup": "",
+			"run": "timeout 15 bash .github/test2.bash",
+			"input": "",
+			"output": "We will meet at the lake!",
+			"comparison": "exact",
+			"timeout": 60,
+			"points": 20
+		},
+		{
+			"name": "Test with 100000 request",
+			"setup": "",
+			"run": "timeout 60 bash .github/test3.bash",
+			"input": "",
+			"output": "Roses are red, violets are blue",
+			"comparison": "exact",
+			"timeout": 60,
+			"points": 20
+		},
+		{
+			"name": "Test powerful-plains-35491.herokuapp.com",
+			"setup": "",
+			"run": "timeout 60 bash .github/testRemote.bash",
+			"input": "",
+			"output": "The wolf placed the burger in the store!",
+			"comparison": "exact",
+			"timeout": 60,
+			"points": 20
+		},
+		{
+			"name": "Test for correct function calls",
+			"setup": "",
+			"run": "timeout 10 bash .github/testCode.bash",
+			"input": "",
+			"output": "",
+			"comparison": "included",
+			"timeout": 60,
+			"points": 10
+		}
+	]
+}
