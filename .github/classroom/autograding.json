@@ -1,0 +1,34 @@
+{
+	"tests": [
+		{
+			"name": "Test with single request",
+			"setup": "",
+			"run": "timeout bash .github/test1.bash",
+			"input": "",
+			"output": "We broke the security code!",
+			"comparison": "exact",
+			"timeout": 60,
+			"points": 30
+		},
+		{
+			"name": "Test with 100 request",
+			"setup": "",
+			"run": "timeout bash .github/test2.bash",
+			"input": "",
+			"output": "We will meet at the lake!",
+			"comparison": "exact",
+			"timeout": 60,
+			"points": 30
+		},
+		{
+			"name": "Test with 100000 request",
+			"setup": "",
+			"run": "timeout bash .github/test3.bash",
+			"input": "",
+			"output": "Roses are red, violets are blue",
+			"comparison": "exact",
+			"timeout": 60,
+			"points": 30
+		}
+	]
+}
