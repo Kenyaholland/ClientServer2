@@ -23,14 +23,15 @@
 
 int main(int argc, char **argv)
 {
-    //if a port is not specified, 80 is default.
+
     int port = 80;
     if(argv[2] != NULL){
         port = atoi(argv[2]);
     }
 
-    //get host name in a way that the socket can use
+    //get length of host name for gethostname function
     struct hostent* server = gethostbyname(argv[1]);
+
     //ensure host exists
     if (server == NULL)      {
         printf("ERROR, no such host, code %i", errno);
@@ -53,14 +54,12 @@ int main(int argc, char **argv)
         printf(" Problem connecting to the socket! Sorry!! \n");
     }
 
-    //initialize important items
     char tcp_server_response[1024];
     char get_request[1024];
     char href_link[1024];
     char message[1024];
 
     do{
-        //clear responses and requests to ensure a fresh pallete at each new page
         memset(tcp_server_response, 0, sizeof(tcp_server_response));
         memset(get_request, 0, sizeof(get_request));
 
@@ -72,49 +71,46 @@ int main(int argc, char **argv)
         //Add the href link if there is one after "Get /"
         if(sizeof(href_link) != 0){
             get_request_1.append(href_link);
-            //clear link so ensure an old one cannot be used
             memset(href_link, 0, sizeof(href_link));
         }
 
         //combining the two lines
         std::string full_get_request = get_request_1 + get_request_2 + server->h_name + get_request_ending;
+        //std::cout << full_get_request << std::endl;
 
         //Copying the new get_request to the char that will be passed into the send function
         strcpy(get_request, full_get_request.c_str());
+        //printf("%s \n", get_request);
 
         //sending get request to server and receiving its response
         send(tcp_client_socket, get_request, strlen(get_request), 0);
         recv(tcp_client_socket, &tcp_server_response, sizeof(tcp_server_response), 0);   // params: where (socket), what (string), how much - size of the server response, flags (0)
+        //printf("%s \r\n", tcp_server_response);
 
-        //Find the link or message within the server response
+        //Find the link or server within the server response
         char find_link_start[50] = "href=\"/";
         char find_message_start[50] = "<p>";
         char find_message_end[50] = "</p>";
 
-        //strstr only points to the beginning of the string we are trying to find
         char* pointer_to_href;
         char* pointer_to_message_start;
         char* pointer_to_message_end;
         
         pointer_to_href = strstr(tcp_server_response, find_link_start);
-        //if a href exists it will save the next 100 characters and store in href_link
         if(pointer_to_href != NULL){
             memcpy(href_link, pointer_to_href + 7, 100);
+            //printf("%s \n", href_link);
+            //std::cout << "Here" << std::endl;
         }
-        else{ //if there is no href, then there will be a message on that screen.
-            //find beginning and ending parts of message. Indicated by <p> and </p>
+        else{
             pointer_to_message_start = strstr(tcp_server_response, find_message_start);
             pointer_to_message_end = strstr(tcp_server_response, find_message_end);
 
-            //get indexes to find the length of the message
             int index_start = pointer_to_message_start - tcp_server_response;
             int index_end = pointer_to_message_end - tcp_server_response;
             int length_of_message = index_end - index_start - 2;
 
-            //copy over the message to a char array that can be passed into get_request later on
             memcpy(message, pointer_to_message_start + 3, length_of_message);
-            
-            //This is to remove any odd characters that sometimes appeared after message
             message[length_of_message - 1] = '\0';
 
             break;
@@ -122,11 +118,10 @@ int main(int argc, char **argv)
 
     }while(true);
 
-    //Display message from last screen
+    //Output, as received from Server
     printf("%s \n", message);
 
     //closing the socket
     close(tcp_client_socket);
-
     return 0;
 }
