@@ -68,7 +68,6 @@ int main(int argc, char **argv)
         //Add the href link if there is one after "Get /"
         if(sizeof(href_link) != 0){
             get_request_1.append(href_link);
-            memset(href_link, 0, sizeof(href_link));
         }
 
         //Adding the host name and spacings on get request ending
@@ -81,7 +80,7 @@ int main(int argc, char **argv)
 
         //Copying the new get_request to the char that will be passed into the send function
         strcpy(get_request, full_get_request.c_str());
-        printf("%s \n", get_request);
+        //printf("%s \n", get_request);
 
         //sending get request to server and receiving its response
         send(tcp_client_socket, get_request, sizeof(get_request), 0);
@@ -100,7 +99,7 @@ int main(int argc, char **argv)
         if(pointer_to_href != NULL){
             int index = pointer_to_href - tcp_server_response;
             memcpy(href_link, pointer_to_href + 7, 100);
-            printf("%s \n", href_link);
+            //printf("%s \n", href_link);
         }
         else{
             std::cout << "Null" << std::endl;
