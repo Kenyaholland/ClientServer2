@@ -30,13 +30,13 @@ int main(int argc, char **argv)
     }
 
     //get length of host name for gethostname function
-    struct hostent* host = gethostbyname(argv[1]);
+    struct hostent* server = gethostbyname(argv[1]);
 
     //ensure host exists
-    if (!host) {
-        printf("ERROR! No such host: %s\n", argv[1]);
-        return 1;
-    }
+    if (server == NULL)      {
+        printf("ERROR, no such host, code %i", errno);
+        return errno;
+    };             
 
     //creating the TCP socket
     int tcp_client_socket;                                    //Socket descriptor
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     struct sockaddr_in tcp_server_address;             //declaring a structure for the address
     tcp_server_address.sin_family = AF_INET;           //Structure Fields' definition: Sets the address family of the address the client would connect to
     tcp_server_address.sin_port = htons(port);        //Specify and pass the port number to connect - converting in right network byte order
-    memcpy(&tcp_server_address.sin_addr.s_addr, host->h_addr, host->h_length);  //Connecting to whatever host name was inputted in command line
+    memcpy(&tcp_server_address.sin_addr.s_addr, server->h_addr, server->h_length);  //Connecting to whatever host name was inputted in command line
 
     //connecting to the remote socket
     int connection_status = connect(tcp_client_socket, (struct sockaddr *) &tcp_server_address, sizeof(tcp_server_address));     //params: which socket, cast for address to the specific structure type, size of address
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
         }
 
         //combining the two lines
-        std::string full_get_request = get_request_1 + get_request_2 + host->h_name + get_request_ending;
+        std::string full_get_request = get_request_1 + get_request_2 + server->h_name + get_request_ending;
         //std::cout << full_get_request << std::endl;
 
         //Copying the new get_request to the char that will be passed into the send function
