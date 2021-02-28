@@ -60,6 +60,9 @@ int main(int argc, char **argv)
     char message[1024];
 
     do{
+        memset(tcp_server_response, 0, sizeof(tcp_server_response));
+        memset(get_request, 0, sizeof(get_request));
+
         //seperation of full get request to add reference link and host name
         std::string get_request_1 = "GET /";
         std::string get_request_2 = " HTTP/1.1\r\nHost: ";
@@ -68,6 +71,7 @@ int main(int argc, char **argv)
         //Add the href link if there is one after "Get /"
         if(sizeof(href_link) != 0){
             get_request_1.append(href_link);
+            memset(href_link, 0, sizeof(href_link));
         }
 
         //combining the two lines
@@ -79,7 +83,7 @@ int main(int argc, char **argv)
         //printf("%s \n", get_request);
 
         //sending get request to server and receiving its response
-        send(tcp_client_socket, get_request, sizeof(get_request), 0);
+        send(tcp_client_socket, get_request, strlen(get_request), 0);
         recv(tcp_client_socket, &tcp_server_response, sizeof(tcp_server_response), 0);   // params: where (socket), what (string), how much - size of the server response, flags (0)
         //printf("%s \r\n", tcp_server_response);
 
@@ -104,15 +108,18 @@ int main(int argc, char **argv)
 
             int index_start = pointer_to_message_start - tcp_server_response;
             int index_end = pointer_to_message_end - tcp_server_response;
-            int length_of_message = index_end - index_start;
+            int length_of_message = index_end - index_start - 2;
+
             memcpy(message, pointer_to_message_start + 3, length_of_message);
-            //std::cout << "else" << std::endl;
+            message[length_of_message - 1] = '\0';
+
+            break;
         }
 
     }while(true);
 
     //Output, as received from Server
-    //printf("\n\n Server says: %s \n", tcp_server_response);
+    printf("%s \n", message);
 
     //closing the socket
     close(tcp_client_socket);
