@@ -56,9 +56,9 @@ int main(int argc, char **argv)
 
     char tcp_server_response[1024];
     char get_request[1024];
-    char href_link[120];
+    char href_link[1024];
+    char message[1024];
     std::string get_request_ending = "\r\n\r\n";
-    std::string message = "";
 
     do{
         //these strings are subject to change so they will stay in the loop
@@ -93,16 +93,22 @@ int main(int argc, char **argv)
         char find_message_end[50] = "</p>";
 
         char* pointer_to_href;
-        char* pointer_to_message;
+        char* pointer_to_message_start;
+        char* pointer_to_message_end;
         
         pointer_to_href = strstr(tcp_server_response, find_link_start);
         if(pointer_to_href != NULL){
-            int index = pointer_to_href - tcp_server_response;
             memcpy(href_link, pointer_to_href + 7, 100);
             //printf("%s \n", href_link);
         }
         else{
-            std::cout << "Null" << std::endl;
+            pointer_to_message_start = strstr(tcp_server_response, find_message_start);
+            pointer_to_message_end = strstr(tcp_server_response, find_message_end);
+
+            int index_start = pointer_to_message_start - tcp_server_response;
+            int index_end = pointer_to_message_end - tcp_server_response;
+            int length_of_message = index_end - index_start;
+            memcpy(message, pointer_to_message_start + 3, length_of_message);
         }
 
     }while(true);
