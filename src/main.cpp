@@ -58,24 +58,20 @@ int main(int argc, char **argv)
     char get_request[1024];
     char href_link[1024];
     char message[1024];
-    std::string get_request_ending = "\r\n\r\n";
 
     do{
-        //these strings are subject to change so they will stay in the loop
+        //seperation of full get request to add reference link and host name
         std::string get_request_1 = "GET /";
         std::string get_request_2 = " HTTP/1.1\r\nHost: ";
+        std::string get_request_ending = "\r\n\r\n";
 
         //Add the href link if there is one after "Get /"
         if(sizeof(href_link) != 0){
             get_request_1.append(href_link);
         }
 
-        //Adding the host name and spacings on get request ending
-        get_request_2.append(host->h_name);
-        get_request_2.append(get_request_ending);
-
         //combining the two lines
-        std::string full_get_request = get_request_1 + get_request_2;
+        std::string full_get_request = get_request_1 + get_request_2 + host->h_name + get_request_ending;
         //std::cout << full_get_request << std::endl;
 
         //Copying the new get_request to the char that will be passed into the send function
@@ -100,6 +96,7 @@ int main(int argc, char **argv)
         if(pointer_to_href != NULL){
             memcpy(href_link, pointer_to_href + 7, 100);
             //printf("%s \n", href_link);
+            //std::cout << "Here" << std::endl;
         }
         else{
             pointer_to_message_start = strstr(tcp_server_response, find_message_start);
@@ -109,6 +106,7 @@ int main(int argc, char **argv)
             int index_end = pointer_to_message_end - tcp_server_response;
             int length_of_message = index_end - index_start;
             memcpy(message, pointer_to_message_start + 3, length_of_message);
+            //std::cout << "else" << std::endl;
         }
 
     }while(true);
