@@ -23,13 +23,13 @@
 
 int main(int argc, char **argv)
 {
-
+    //Default port is 80 unless specified in argv[2]
     int port = 80;
     if(argv[2] != NULL){
         port = atoi(argv[2]);
     }
 
-    //get length of host name for gethostname function
+    //get host name in a way the socket can use
     struct hostent* server = gethostbyname(argv[1]);
 
     //ensure host exists
@@ -60,6 +60,7 @@ int main(int argc, char **argv)
     char message[1024];
 
     do{
+        //Clear chars to ensure old info will not be used
         memset(tcp_server_response, 0, sizeof(tcp_server_response));
         memset(get_request, 0, sizeof(get_request));
 
@@ -71,46 +72,49 @@ int main(int argc, char **argv)
         //Add the href link if there is one after "Get /"
         if(sizeof(href_link) != 0){
             get_request_1.append(href_link);
+            //clear link to ensure old onfo wont be used
             memset(href_link, 0, sizeof(href_link));
         }
 
         //combining the two lines
         std::string full_get_request = get_request_1 + get_request_2 + server->h_name + get_request_ending;
-        //std::cout << full_get_request << std::endl;
 
         //Copying the new get_request to the char that will be passed into the send function
         strcpy(get_request, full_get_request.c_str());
-        //printf("%s \n", get_request);
 
         //sending get request to server and receiving its response
         send(tcp_client_socket, get_request, strlen(get_request), 0);
         recv(tcp_client_socket, &tcp_server_response, sizeof(tcp_server_response), 0);   // params: where (socket), what (string), how much - size of the server response, flags (0)
-        //printf("%s \r\n", tcp_server_response);
 
         //Find the link or server within the server response
         char find_link_start[50] = "href=\"/";
         char find_message_start[50] = "<p>";
         char find_message_end[50] = "</p>";
 
+        //strstr points to beginning of string
         char* pointer_to_href;
         char* pointer_to_message_start;
         char* pointer_to_message_end;
         
+        //find where href begins
         pointer_to_href = strstr(tcp_server_response, find_link_start);
         if(pointer_to_href != NULL){
             memcpy(href_link, pointer_to_href + 7, 100);
-            //printf("%s \n", href_link);
-            //std::cout << "Here" << std::endl;
         }
         else{
+            //Since there is no link, find message beginning and end pointers
             pointer_to_message_start = strstr(tcp_server_response, find_message_start);
             pointer_to_message_end = strstr(tcp_server_response, find_message_end);
 
+            //get length of message
             int index_start = pointer_to_message_start - tcp_server_response;
             int index_end = pointer_to_message_end - tcp_server_response;
             int length_of_message = index_end - index_start - 2;
 
+            //store message to char
             memcpy(message, pointer_to_message_start + 3, length_of_message);
+
+            //To ensure no random characters will be added
             message[length_of_message - 1] = '\0';
 
             break;
@@ -118,7 +122,7 @@ int main(int argc, char **argv)
 
     }while(true);
 
-    //Output, as received from Server
+    //Print message
     printf("%s \n", message);
 
     //closing the socket
