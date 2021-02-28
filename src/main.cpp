@@ -17,16 +17,18 @@
 #include <unistd.h>         //close function
 #include <netdb.h>          //gethostbyname
 #include <string.h>         //memcpy
+#include <string>
 
 #include <iostream>
 
 int main(int argc, char **argv)
 {
+
     //get length of host name for gethostname function
-    struct hostent* hostName = gethostbyname(argv[1]);
+    struct hostent* host = gethostbyname(argv[1]);
 
     //ensure host exists
-    if (!hostName) {
+    if (!host) {
         printf("ERROR! No such host: %s\n", argv[1]);
         return 1;
     }
@@ -39,7 +41,7 @@ int main(int argc, char **argv)
     struct sockaddr_in tcp_server_address;             //declaring a structure for the address
     tcp_server_address.sin_family = AF_INET;           //Structure Fields' definition: Sets the address family of the address the client would connect to
     tcp_server_address.sin_port = htons(atoi(argv[2]));        //Specify and pass the port number to connect - converting in right network byte order
-    memcpy(&tcp_server_address.sin_addr.s_addr, hostName->h_addr_list[0], hostName->h_length);  //Connecting to whatever host name was inputted in command line
+    memcpy(&tcp_server_address.sin_addr.s_addr, host->h_addr_list[0], host->h_length);  //Connecting to whatever host name was inputted in command line
 
     //connecting to the remote socket
     int connection_status = connect(tcp_client_socket, (struct sockaddr *) &tcp_server_address, sizeof(tcp_server_address));     //params: which socket, cast for address to the specific structure type, size of address
@@ -47,8 +49,54 @@ int main(int argc, char **argv)
         printf(" Problem connecting to the socket! Sorry!! \n");
     }
 
-    //char tcp_server_response[256];
-    //recv(tcp_client_socket, &tcp_server_response, sizeof(tcp_server_response), 0);   // params: where (socket), what (string), how much - size of the server response, flags (0)
+    char tcp_server_response[2048];
+    std::string href_link = "";
+    std::string get_request_ending = "\r\n\r\n";
+
+    do{
+        //these strings are subject to change so they will stay in the loop
+        std::string get_request_1 = "GET /";
+        std::string get_request_2 = " HTTP/1.1\r\nHost: ";
+
+        //If there is a next link then it will be added after "GET /"
+        if(href_link != ""){
+            get_request_1.append(href_link);
+            href_link.clear();
+        }
+
+        //Adding the host name and spacings on get request ending
+        get_request_2.append(host->h_name);
+        get_request_2.append(get_request_ending);
+
+        //combining the two lines
+        std::string full_get_request = get_request_1 + get_request_2;
+        //std::cout << full_get_request << std::endl;
+
+        //Copying the new get_request to the char that will be passed into the send function
+        char get_request[2048];
+        strcpy(get_request, full_get_request.c_str());
+        //printf("%s \n", get_request);
+
+        //sending get request to server and receiving its response
+        send(tcp_client_socket, get_request, sizeof(get_request), 0);
+        recv(tcp_client_socket, &tcp_server_response, sizeof(tcp_server_response), 0);   // params: where (socket), what (string), how much - size of the server response, flags (0)
+        printf("%s \r\n", tcp_server_response);
+
+        //make a new string variable to store server response to use find function
+        std::string server_response_string(tcp_server_response);
+
+        //Find the link within the server response
+        std::string find_link_start = "href=\"/";
+
+        std::size_t found_link_start = server_response_string.find(find_link_start);
+        if(found_link_start != std::string::npos){
+            //this line will take the position from found_link_start and read the next 100 character into href_link
+            href_link = server_response_string.substr(found_link_start + 7, 100);
+        }
+
+        //std::cout << "Link: " + href_link << std::endl;
+
+    }while(true);
 
     //Output, as received from Server
     //printf("\n\n Server says: %s \n", tcp_server_response);
